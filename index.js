@@ -4,8 +4,6 @@ dotenv.load();
 const Telegraf = require('telegraf');
 const { reply } = Telegraf;
 
-console.log(process.env);
-
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.command('/oldschool', (ctx) => ctx.reply('Hello'));
 bot.command('/modern', ({ reply }) => reply('Yo'));
