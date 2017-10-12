@@ -12,3 +12,4 @@ bot.command('/hipster', reply('λ'));
 bot.hears('hi', (ctx) => ctx.reply('Hey there!'));
 bot.on('sticker', (ctx) => ctx.reply('👍'));
 bot.startPolling();
+module.exports = bot;
