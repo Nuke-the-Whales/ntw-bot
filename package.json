@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "micro-bot -d ${NOW_URL} -e",
+    "start": "micro-bot -p ${PORT}",
     "deploy": "now",
-    "develop": "nodemon --exec 'micro-bot -e '",
+    "develop": "nodemon --exec micro-bot --e",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
