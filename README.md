@@ -9,10 +9,11 @@ BOT_TOKEN={YOUR_BOT_TOKEN}
 3. `npm start`
 
 ## Deployment
-Deployment using  [Now](http://zeit.co)
-1. `npm i -g now`
-2. Create `.env` file in root directory with contents:
+Deployment using  [Heroku](http://heroku.com)
+1. Install [heroku binaries](https://devcenter.heroku.com/articles/getting-started-with-nodejs#set-up) and login via console
+2. Update Heroku config:
 ```
-BOT_TOKEN={YOUR_BOT_TOKEN}
+heroku config:set --app YourAppId BOT_TOKEN=YOUR_BOT_TOKEN
+heroku config:set --app YourAppId BOT_DOMAIN=https://YourAppId.herokuappp.com
 ```
-3. `now -e NODE_ENV="production" --dotenv`
+3. `git push heroku master`
