@@ -5,4 +5,5 @@ dist*
 coverage
 build.sh
 .env
+.dev.env
 src/public/.temp

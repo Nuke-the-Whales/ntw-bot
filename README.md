@@ -6,7 +6,11 @@
 ```
 BOT_TOKEN={YOUR_BOT_TOKEN}
 ```
-3. `npm start`
+3. Create `.dev.env` file in root directory with contents:
+```
+BOT_TOKEN={YOUR_DEV_BOT_TOKEN}
+```
+4. `npm run develop`
 
 ## Deployment
 Deployment using  [Heroku](http://heroku.com)
