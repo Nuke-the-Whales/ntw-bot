@@ -17,6 +17,19 @@ bot.command('/hipster', reply('λ'));
 bot.hears('hi', (ctx) => ctx.reply('Hey there!'));
 bot.on('sticker', (ctx) => ctx.reply('👍'));
 
+//Callback query handlers
+const onShowInfoRequest = async (ctx, seriesId) => {
+    const showInfo = await service.showItem(seriesId);
+
+    if (!showInfo.error) {
+        let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
+        return ctx.answerCallbackQuery(formattedShowInfo);
+    }
+
+    return ctx.reply(`Couldn't fetch show info. Please try again`);
+}
+
+
 //Search via inline query (@NukeTheWhalesBot ...)
 bot.on('inline_query', async ctx => {
     let searchText = ctx.update.inline_query.query;
@@ -32,23 +45,21 @@ bot.on('inline_query', async ctx => {
     }
 });
 
-//Send show info after user selects inline query result
-bot.on('chosen_inline_result', async ctx => {
-    console.log('chosen inline result', ctx.update.chosen_inline_result);
-	let {from: user, result_id: seriesId} = ctx.update.chosen_inline_result;
-	let showInfo = await service.showItem(seriesId);
+bot.on('callback_query', async ctx => {
+    let updateData = JSON.parse(ctx.callbackQuery.data);
+    const updateType = updateData.type;
 
-	if (!showInfo.error) {
-	    let formattedShowInfo = utils.prepareShowInfo(showInfo);
-	    return ctx.replyWithPhoto(formattedShowInfo);
+    switch (updateType) {
+        case 'info':
+            onShowInfoRequest(ctx, updateData.id)
+            break;
+    
+        default:
+            break;
     }
 
-	return ctx.reply(`Couldn't retrieve detailed show info. Please try again later`);
-});
 
-//Subscribe user to tv series
-bot.on('callback_query', async ctx => {
-    console.log('ctx', ctx);
+    console.log('ctx cb query', ctx.callbackQuery);
 	return ctx.reply(`test`);
 });
 
