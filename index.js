@@ -3,8 +3,8 @@ const { Composer, Extra } = require('micro-bot');
 const Telegraf = require('telegraf');
 const { reply } = Telegraf;
 
-const service = require('service');
 const utils = require('utils');
+const service = require('./service');
 
 dotenv.load();
 
@@ -40,7 +40,7 @@ bot.on('chosen_inline_result', ctx => {
     if (!subscription.error) {
         return ctx.answerInlineQuery(utils.successMsg,
             {
-                switch_pm_text: `subscription added! 
+                switch_pm_text: `subscription added!
                 Try other commands or continue searching for other series`
             })
     }
