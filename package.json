@@ -6,7 +6,7 @@
   "scripts": {
     "start": "micro-bot -p ${PORT}",
     "deploy": "now",
-    "develop": "nodemon --exec micro-bot --e",
+    "develop": "nodemon --exec micro-bot --e .dev.env",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
