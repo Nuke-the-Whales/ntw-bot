@@ -3,7 +3,7 @@ const { Composer, Extra } = require('micro-bot');
 const Telegraf = require('telegraf');
 const { reply } = Telegraf;
 
-const utils = require('utils');
+const utils = require('./utils');
 const service = require('./service');
 
 dotenv.load();
@@ -18,8 +18,7 @@ bot.hears('hi', (ctx) => ctx.reply('Hey there!'));
 bot.on('sticker', (ctx) => ctx.reply('👍'));
 
 //Search via inline query (@NukeTheWhalesBot ...)
-
-bot.on('inline_query', ctx => {
+bot.on('inline_query', async ctx => {
     let searchText = ctx.update.inline_query.query;
     if (searchText.length > 3) {
         let seriesList = await service.searchSeries(searchText);
@@ -33,20 +32,25 @@ bot.on('inline_query', ctx => {
     }
 });
 
-bot.on('chosen_inline_result', ctx => {
-    let {from: user, result_id: seriesId} = ctx.update.chosen_inline_result;
-    let subscription = await service.addSubscription(user.id, seriesId);
+//Send show info after user selects inline query result
+bot.on('chosen_inline_result', async ctx => {
+    console.log('chosen inline result', ctx.update.chosen_inline_result);
+	let {from: user, result_id: seriesId} = ctx.update.chosen_inline_result;
+	let showInfo = await service.showItem(seriesId);
 
-    if (!subscription.error) {
-        return ctx.answerInlineQuery(utils.successMsg,
-            {
-                switch_pm_text: `subscription added!
-                Try other commands or continue searching for other series`
-            })
+	if (!showInfo.error) {
+	    let formattedShowInfo = utils.prepareShowInfo(showInfo);
+	    return ctx.replyWithPhoto(formattedShowInfo);
     }
 
-    return ctx.answerInlineQuery(utils.errorMsg, {switch_pm_text: 'Subscription failed. Try some of other commands'});
-})
+	return ctx.reply(`Couldn't retrieve detailed show info. Please try again later`);
+});
+
+//Subscribe user to tv series
+bot.on('callback_query', async ctx => {
+    console.log('ctx', ctx);
+	return ctx.reply(`test`);
+});
 
 
 module.exports = bot;
