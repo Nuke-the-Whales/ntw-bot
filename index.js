@@ -17,17 +17,29 @@ bot.command('/hipster', reply('λ'));
 bot.hears('hi', (ctx) => ctx.reply('Hey there!'));
 bot.on('sticker', (ctx) => ctx.reply('👍'));
 
-//Callback query handlers
-const onShowInfoRequest = async (ctx, seriesId) => {
+bot.command('/actions', async ctx => {
+    const seriesId = ctx.message.text.split(' ')[1];
     const showInfo = await service.showItem(seriesId);
 
     if (!showInfo.error) {
         let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
-        return ctx.answerCallbackQuery(formattedShowInfo);
+        return ctx.replyWithPhoto(formattedShowInfo[0], formattedShowInfo[1]);
     }
 
     return ctx.reply(`Couldn't fetch show info. Please try again`);
-}
+});
+
+// Callback query handlers
+const onSubscribeRequest = async (ctx, seriesId) => {
+    const subscribeResult = await service.addSubscription(ctx, seriesId)
+
+    if (!subscribeResult.error) {
+        ctx.editMessageReplyMarkup(JSON.stringify({}));
+        return ctx.answerCallbackQuery('Subscription added');
+    }
+    ctx.editMessageReplyMarkup(JSON.stringify({}));
+    return ctx.answerCallbackQuery(`Couldn't subscribe. Please try again`);
+};
 
 
 //Search via inline query (@NukeTheWhalesBot ...)
@@ -50,17 +62,11 @@ bot.on('callback_query', async ctx => {
     const updateType = updateData.type;
 
     switch (updateType) {
-        case 'info':
-            onShowInfoRequest(ctx, updateData.id)
-            break;
-    
+        case 'subscribe':
+            return onSubscribeRequest(ctx, updateData.id);
         default:
             break;
     }
-
-
-    console.log('ctx cb query', ctx.callbackQuery);
-	return ctx.reply(`test`);
 });
 
 

@@ -1,4 +1,4 @@
-const generateSubscribeKeyboard = (seriesId, buttons) => {
+const generateSubscribeKeyboard = (seriesId, buttons, type) => {
     const subscribeButton = {
         text: 'Subscribe me to this show!',
         callback_data: JSON.stringify({
@@ -9,10 +9,6 @@ const generateSubscribeKeyboard = (seriesId, buttons) => {
 
     const showMoreButton = {
         text: 'Show more info',
-        callback_data: JSON.stringify({
-            type: 'info',
-            id: seriesId
-        })
     };
 
     const notInterestedButton = {
@@ -25,19 +21,10 @@ const generateSubscribeKeyboard = (seriesId, buttons) => {
         info: showMoreButton,
         leave: notInterestedButton
     };
-    return buttons.map(button => ([
-        dictionary[button]
-    ]))
 
-    // return subscribeKeyboard = {
-    //     inline_keyboard: [[subscribeButton], [showMoreButton], [notInterestedButton]],
-	// 	one_time_keyboard: true
-    // }   
-     return subscribeKeyboard = {
-        inline_keyboard: buttons.map(btn => [dictionary[btn]]),
-		one_time_keyboard: true
-    }
-
+    return JSON.stringify({
+        inline_keyboard: buttons.map(btn => [dictionary[btn]])
+    });
 }
 
 const prepareSeriesList = (seriesList) => {
@@ -47,18 +34,25 @@ const prepareSeriesList = (seriesList) => {
                 type: 'article',
                 id: imdb,
                 title: title,
-                input_message_content: {message_text: `${title}, year ${year}, with imdb score ${Math.floor(score)}`},
-                reply_markup: generateSubscribeKeyboard(imdb, ['subscribe', 'info', 'leave'])
+                input_message_content: {message_text: `/actions ${imdb}`}
             })
-	    );
+        );
 };
 
 const prepareShowInfo = ({poster, overview}, seriesId) => {
-	return {
-		photo: poster,
-		overview,
-		reply_markup: generateSubscribeKeyboard(seriesId, ['subscribe', 'leave'])
+    let preparedPoster;
+    if (poster.startsWith('https')) {
+        preparedPoster = poster.replace('https', 'http');
+    } else {
+        preparedPoster = poster;
     }
+
+    return [{
+                url: preparedPoster
+            }, {
+                caption: overview,
+                reply_markup: generateSubscribeKeyboard(seriesId, ['subscribe', 'leave'], 'inline')
+            }];
 };
 
 const errorMsg = {
