@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const API_ENDPOINT = 'http://localhost:8080'
+const API_ENDPOINT = process.env.ENDPOINT || 'http://localhost:8080';
 
 const searchSeries = async (searchInput) => {
     try {
