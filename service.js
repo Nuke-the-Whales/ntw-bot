@@ -19,19 +19,20 @@ const showItem = async (itemId) => {
         return json;
     } catch (error) {
         console.log('error showing series', error);
-	    return {error: true};
+        return {error: true};
     }
 };
 
 const addSubscription = async (userId, seriesId) => {
-    try {
-        const response = fetch(`${API_ENDPOINT}`, { method: 'POST', body: {userId, seriesId} })
-        const json = await response.json();
-        return json;
-    } catch (error) {
-	    console.log('error adding subscription', error);
-	    return {error: true}
-    }
+    // try {
+    //     const response = fetch(`${API_ENDPOINT}`, { method: 'POST', body: {userId, seriesId} })
+    //     const json = await response.json();
+    //     return json;
+    // } catch (error) {
+    //    console.log('error adding subscription', error);
+    //    return {error: true}
+    // }
+    return Promise.resolve(true);
 };
 
 module.exports.searchSeries = searchSeries;
