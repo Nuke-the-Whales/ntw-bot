@@ -8,7 +8,7 @@ const service = require('./service');
 
 dotenv.load();
 
-const bot = new Composer;
+const bot = new Composer();
 
 bot.command('/oldschool', (ctx) => ctx.reply('Hello'));
 bot.command('/modern', ({ reply }) => reply('Yo'));
@@ -41,6 +41,23 @@ const onSubscribeRequest = async (ctx, seriesId) => {
     return ctx.answerCallbackQuery(`Couldn't subscribe. Please try again`);
 };
 
+const onInfoRequest = async (ctx, seriesId) => {
+	const showInfo = await service.showItem(seriesId);
+
+	if (!showInfo.error) {
+		let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
+		return ctx.answerCallbackQuery('showing more info').then();
+	}
+	ctx.editMessageReplyMarkup(JSON.stringify({}));
+	return ctx.reply(`Couldn't fetch show info. Please try again`);
+};
+
+const sendPhoto = async (ctx, seriesId) => {
+
+}
+
+
+
 
 //Search via inline query (@NukeTheWhalesBot ...)
 bot.on('inline_query', async ctx => {
@@ -64,6 +81,8 @@ bot.on('callback_query', async ctx => {
     switch (updateType) {
         case 'subscribe':
             return onSubscribeRequest(ctx, updateData.id);
+        case 'info':
+            return onInfoRequest(ctx, updateData.id).then(() => console.log(ctx));
         default:
             break;
     }

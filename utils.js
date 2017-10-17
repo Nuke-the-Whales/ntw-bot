@@ -9,6 +9,7 @@ const generateSubscribeKeyboard = (seriesId, buttons, type) => {
 
     const showMoreButton = {
         text: 'Show more info',
+	    switch_inline_query_current_chat: ''
     };
 
     const notInterestedButton = {
@@ -22,19 +23,21 @@ const generateSubscribeKeyboard = (seriesId, buttons, type) => {
         leave: notInterestedButton
     };
 
-    return JSON.stringify({
+    return {
         inline_keyboard: buttons.map(btn => [dictionary[btn]])
-    });
-}
+    };
+};
 
 const prepareSeriesList = (seriesList) => {
+
     return seriesList
         .filter(({type}) => type === 'show')
         .map(({imdb, score, title, year}) => ({
                 type: 'article',
                 id: imdb,
                 title: title,
-                input_message_content: {message_text: `/actions ${imdb}`}
+                input_message_content: {message_text: `Good choice... What do you want to do next?`},
+                reply_markup: generateSubscribeKeyboard(imdb, ['subscribe', 'info', 'leave'], 'inline')
             })
         );
 };
