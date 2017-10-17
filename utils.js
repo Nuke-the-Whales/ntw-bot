@@ -1,20 +1,15 @@
 const generateSubscribeKeyboard = (seriesId, buttons, type) => {
     const subscribeButton = {
-        text: 'Subscribe me to this show!',
-        callback_data: JSON.stringify({
-            type: 'subscribe',
-            id: seriesId
-        })
+        text: `/subscribe ${seriesId}`
     };
 
     const showMoreButton = {
         text: 'Show more info',
-	    switch_inline_query_current_chat: ''
+        callback_data: JSON.stringify({type: 'info', id: seriesId})
     };
 
     const notInterestedButton = {
-        text: 'Not interested... Take me back to search',
-        switch_inline_query_current_chat: ''
+        text: '/end',
     };
 
     const dictionary = {
@@ -24,20 +19,36 @@ const generateSubscribeKeyboard = (seriesId, buttons, type) => {
     };
 
     return {
-        inline_keyboard: buttons.map(btn => [dictionary[btn]])
+        keyboard: buttons.map(btn => [dictionary[btn]]),
+        one_time_keyboard: true,
+        resize_keyboard: true
     };
 };
 
-const prepareSeriesList = (seriesList) => {
+const afterSubscriptionKeyboard = () => {
+    const continueSearchButton = {
+        text: 'Continue searching series...',
+        switch_inline_query_current_chat: ''
+    };
 
+    const endButton = {
+        text: `No I'm done`,
+        callback_data: JSON.stringify({type: 'end'})
+    };
+
+    return {
+        inline_keyboard: [[continueSearchButton], [endButton]]
+    }
+}
+
+const prepareSeriesList = (seriesList) => {
     return seriesList
         .filter(({type}) => type === 'show')
         .map(({imdb, score, title, year}) => ({
                 type: 'article',
                 id: imdb,
                 title: title,
-                input_message_content: {message_text: `Good choice... What do you want to do next?`},
-                reply_markup: generateSubscribeKeyboard(imdb, ['subscribe', 'info', 'leave'], 'inline')
+                input_message_content: {message_text: `/info ${imdb}`},
             })
         );
 };
@@ -58,6 +69,15 @@ const prepareShowInfo = ({poster, overview}, seriesId) => {
             }];
 };
 
+const prepareSubscriptionResponse = () => {
+    return [
+        'Subscription successful',
+        {
+            reply_markup: afterSubscriptionKeyboard()
+        }
+    ];
+};
+
 const errorMsg = {
     type: 'article',
     id: 'error',
@@ -67,4 +87,5 @@ const errorMsg = {
 
 module.exports.prepareSeriesList = prepareSeriesList;
 module.exports.prepareShowInfo = prepareShowInfo;
+module.exports.prepareSubscriptionResponse = prepareSubscriptionResponse;
 module.exports.errorMsg = errorMsg;

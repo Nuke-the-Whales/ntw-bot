@@ -13,7 +13,6 @@ const searchSeries = async (searchInput) => {
 };
 
 const showItem = async (itemId) => {
-    console.log('showItem')
     try {
         const response = await fetch(`${API_ENDPOINT}/show?id=${itemId}`);
         const json = await response.json();
@@ -25,9 +24,9 @@ const showItem = async (itemId) => {
 };
 
 const addSubscription = async (userId, seriesId) => {
-	const response = await fetch(`${API_ENDPOINT}/subscriptions`);
+    // const response = await fetch(`${API_ENDPOINT}/subscriptions`);
 
-	// try {
+    // try {
     //     const response = fetch(`${API_ENDPOINT}`, { method: 'POST', body: {userId, seriesId} })
     //     const json = await response.json();
     //     return json;
