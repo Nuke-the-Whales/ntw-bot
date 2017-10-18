@@ -1,4 +1,5 @@
 const dotenv = require("dotenv");
+dotenv.load();
 const { Composer, Extra } = require('micro-bot');
 const Telegraf = require('telegraf');
 const { Telegram } = require('telegraf');
@@ -7,30 +8,59 @@ const { reply } = Telegraf;
 const utils = require('./utils');
 const service = require('./service');
 
-dotenv.load();
 
 const bot = new Telegraf();
 const telega = new Telegram(process.env.BOT_TOKEN);
 
-let chatId;
-bot.command('/start', (ctx) => chatId = ctx.update.message.chat.id);
-bot.command('/modern', ({ reply }) => reply('Yo'));
-bot.command('/hipster', reply('λ'));
+bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
+// bot.command('/start', (ctx) => chatId = ctx.update.message.chat.id);
 
-//telega.sendMessage(chatId, 'HI!');
-bot.on('sticker', (ctx) => ctx.reply('👍'));
+let recentManualUpdateTrigger = false;
 
-bot.command('/actions', async ctx => {
-    const seriesId = ctx.message.text.split(' ')[1];
-    const showInfo = await service.showItem(seriesId);
+// Update logic
+const sendUpdate = ({chat_id, data}) => {
+    return this.telega.sendMessage(chat_id, data);
+};
 
-    if (!showInfo.error) {
-        let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
-        return ctx.replyWithPhoto(formattedShowInfo[0], formattedShowInfo[1]);
-    }
+const sendUpdates = async () => {
+    let updatesFetchSuccess = false;
+    let updatesFetchTries = 0;
 
-    return ctx.reply(`Couldn't fetch show info. Please try again`);
-});
+	while (updatesFetchTries < 5 && !updatesFetchSuccess) {
+	    let updateData;
+	    try {
+	        updateData = await service.getUpdates();
+        } catch (error) {
+	        console.log('error getting updates', error);
+		    updatesFetchTries++;
+        }
+
+		if (!updateData.error) {
+			updatesFetchSuccess = true;
+			updateData.forEach(update => sendUpdate({chat_id, data}));
+		} else {
+			updatesFetchTries++;
+        }
+	}
+
+	return;
+};
+
+setInterval(() => sendUpdates(), 1000 * 60 * 60 * 24);
+
+
+
+// bot.command('/actions', async ctx => {
+//     const seriesId = ctx.message.text.split(' ')[1];
+//     const showInfo = await service.showItem(seriesId);
+//
+//     if (!showInfo.error) {
+//         let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
+//         return ctx.replyWithPhoto(formattedShowInfo[0], formattedShowInfo[1]);
+//     }
+//
+//     return ctx.reply(`Couldn't fetch show info. Please try again`);
+// });
 
 //Pseudo-command
 bot.hears(/^\/info/, async ctx => {
@@ -50,37 +80,68 @@ bot.hears(/^\/subscribe/, async ctx => {
         const subscribeResult = await service.addSubscription(seriesId, userId);
 
         if (!subscribeResult.error) {
-                let formattedSubscriptionInfo = utils.prepareSubscriptionResponse();
-                return ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
+            let formattedSubscriptionInfo = utils.prepareSubscriptionResponse();
+	        return ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
         }
         return ctx.reply(`Couldn't subscribe. Please try again`);
     }
 );
 
+bot.hears(/^\/myshows/, async ctx => {
+		const subscriptions = await service.getSubscriptions(ctx.update.message.chat.id);
+
+		if (!subscriptions.error) {
+			let formattedSubscriptions = utils.prepareSubscriptions();
+			return ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
+		}
+		return ctx.reply(`Couldn't subscribe. Please try again`);
+	}
+);
+
+bot.hears(/^\/delete/, async ctx => {
+	const seriesId = ctx.update.message.text.split(' ')[1];
+	const chatId = ctx.update.message.chat_id;
+	const deleteSubscriptionResult = await service.deleteSubscription(chatId, seriesId);
+
+		if (!deleteSubscriptionResult.error) {
+			return ctx.reply('You have been unsubscribed from this show');
+		}
+		return ctx.reply(`Couldn't unsubscribe. Please try again`);
+	}
+);
+
+bot.hears(/^\/testUpdates/, async ctx => {
+		if (recentManualUpdateTrigger) return;
+		sendUpdates();
+		recentManualUpdateTrigger = true;
+		setTimeout(() => recentManualUpdateTrigger = false, 7000);
+	}
+);
+
 // Callback query handlers
-const onSubscribeRequest = async (ctx, seriesId) => {
-    const subscribeResult = await service.addSubscription(ctx, seriesId)
-
-    if (!subscribeResult.error) {
-        ctx.editMessageReplyMarkup(JSON.stringify({}));
-        return ctx.answerCallbackQuery('Subscription added');
-    }
-    ctx.editMessageReplyMarkup(JSON.stringify({}));
-    return ctx.answerCallbackQuery(`Couldn't subscribe. Please try again`);
-};
-
-const onInfoRequest = async (ctx, seriesId) => {
-    return ctx.answerCallbackQuery('show more info', undefined, true).then((ctx) => console.log('123', ctx))
-    
-    const showInfo = await service.showItem(seriesId);
-
-    if (!showInfo.error) {
-        let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
-        return ctx.answerCallbackQuery('showing more info').then();
-    }
-    ctx.editMessageReplyMarkup(JSON.stringify({}));
-    return ctx.reply(`Couldn't fetch show info. Please try again`);
-};
+// const onSubscribeRequest = async (ctx, seriesId) => {
+//     const subscribeResult = await service.addSubscription(ctx, seriesId);
+//
+//     if (!subscribeResult.error) {
+//         ctx.editMessageReplyMarkup(JSON.stringify({}));
+//         return ctx.answerCallbackQuery('Subscription added');
+//     }
+//     ctx.editMessageReplyMarkup(JSON.stringify({}));
+//     return ctx.answerCallbackQuery(`Couldn't subscribe. Please try again`);
+// };
+// //
+// const onInfoRequest = async (ctx, seriesId) => {
+//     return ctx.answerCallbackQuery('show more info', undefined, true).then((ctx) => console.log('123', ctx))
+//
+//     const showInfo = await service.showItem(seriesId);
+//
+//     if (!showInfo.error) {
+//         let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
+//         return ctx.answerCallbackQuery('showing more info').then();
+//     }
+//     ctx.editMessageReplyMarkup(JSON.stringify({}));
+//     return ctx.reply(`Couldn't fetch show info. Please try again`);
+// };
 
 //Search via inline query (@NukeTheWhalesBot ...)
 bot.on('inline_query', async ctx => {
@@ -102,12 +163,14 @@ bot.on('callback_query', async ctx => {
     const updateType = updateData.type;
 
     switch (updateType) {
-        case 'subscribe':
-            return onSubscribeRequest(ctx, updateData.id);
-        case 'info':
-                        return onInfoRequest(ctx, updateData.id).then(() => console.log(ctx));
-                case 'end':
-                    return ctx.answerCallbackQuery('Ok. We will ping you when new episodes come out')
+        // case 'subscribe':
+        //     return onSubscribeRequest(ctx, updateData.id);
+        // case 'info':
+        //     return onInfoRequest(ctx, updateData.id).then(() => console.log(ctx));
+        case 'end': {
+            ctx.editMessageReplyMarkup(JSON.stringify({}));
+	        return ctx.answerCallbackQuery('Ok. We will ping you when new episodes come out');
+        }
         default:
             break;
     }
