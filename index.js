@@ -77,15 +77,21 @@ bot.hears(/^\/info/, async ctx => {
 bot.hears(/^\/subscribe/, async ctx => {
         const seriesId = ctx.update.message.text.split(' ')[1];
         const userId = ctx.update.message.from.id;
-        const subscribeResult = await service.addSubscription(seriesId, userId);
+        const subscribeResult = await service.addSubscription(userId, seriesId);
 
         if (!subscribeResult.error) {
             let formattedSubscriptionInfo = utils.prepareSubscriptionResponse();
-	        return ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
+            ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
+            // const subInfo = await service.getSubscriptionsByChatId(ctx.update.message.chat.id);
+            telega.sendMessage(ctx.update.message.chat.id, `Psst.. I have something useful for you, but you shouldn't say you got this from me`, {
+                reply_markup: utils.prepareTorrentKeyboard(seriesId)
+            });
+            return ctx.update.message.chat.id
         }
-        return ctx.reply(`Couldn't subscribe. Please try again`);
+        ctx.reply(`Couldn't subscribe. Please try again`);
+        return null;
     }
-);
+)
 
 bot.hears(/^\/myshows/, async ctx => {
 		const subscriptions = await service.getSubscriptions(ctx.update.message.chat.id);
@@ -167,6 +173,19 @@ bot.on('callback_query', async ctx => {
         //     return onSubscribeRequest(ctx, updateData.id);
         // case 'info':
         //     return onInfoRequest(ctx, updateData.id).then(() => console.log(ctx));
+        case 'yesTorrent': {
+            const chatId = ctx.update.callback_query.message.chat.id;
+            const showInfo = await service.showItem(updateData.id);
+            const torrents = showInfo.torrents.slice(0, 3);
+            console.log('torrents', torrents)
+            ctx.editMessageReplyMarkup(JSON.stringify({}));
+            ctx.answerCallbackQuery('Check this out!');
+            telega.sendMessage()
+        }
+        case 'noTorrent': {
+            ctx.editMessageReplyMarkup(JSON.stringify({}));
+	        return ctx.answerCallbackQuery('No problem. Ask me anytime later');
+        }
         case 'end': {
             ctx.editMessageReplyMarkup(JSON.stringify({}));
 	        return ctx.answerCallbackQuery('Ok. We will ping you when new episodes come out');
