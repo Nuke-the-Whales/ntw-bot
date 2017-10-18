@@ -69,6 +69,22 @@ const prepareShowInfo = ({poster, overview}, seriesId) => {
             }];
 };
 
+const prepareTorrentKeyboard = (seriesId) => {
+    const yesButton = {
+        text: `Let's see what you got`,
+        callback_data: JSON.stringify({type: 'yesTorrent', id: seriesId})
+    };
+
+    const noButton = {
+        text: 'Uhm... No thanks, that seems dangerous.',
+        callback_data: JSON.stringify({type: 'noTorrent'})
+    }
+
+    return {
+        inline_keyboard: [[yesButton], [noButton]]
+    };
+}
+
 const prepareSubscriptionResponse = () => {
     return [
         'Subscription successful',
@@ -95,3 +111,4 @@ module.exports.prepareSeriesList = prepareSeriesList;
 module.exports.prepareShowInfo = prepareShowInfo;
 module.exports.prepareSubscriptionResponse = prepareSubscriptionResponse;
 module.exports.errorMsg = errorMsg;
+module.exports.prepareTorrentKeyboard = prepareTorrentKeyboard;
