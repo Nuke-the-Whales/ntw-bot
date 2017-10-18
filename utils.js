@@ -78,6 +78,12 @@ const prepareSubscriptionResponse = () => {
     ];
 };
 
+const prepareSubscriptions = () => {
+    return [
+        ''
+    ]
+}
+
 const errorMsg = {
     type: 'article',
     id: 'error',
