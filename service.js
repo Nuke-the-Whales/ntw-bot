@@ -37,9 +37,10 @@ const addSubscription = async (userId, showId) => {
     }
 };
 
-const getUpdates = async() => {
+const getUpdates = async currentDate => {
+	console.log('curdate', currentDate);
 	try {
-		const response = await fetch(`${API_ENDPOINT}/tv-shows`);
+		const response = await fetch(`${API_ENDPOINT}/tv-updates?date=${currentDate}`);
 		const json = await response.json();
 		return json;
 	} catch (error) {
@@ -50,9 +51,9 @@ const getUpdates = async() => {
     return Promise.resolve(mock);
 }
 
-const getSubscriptions = async() => {
+const getSubscriptions = async () => {
 	try {
-		const response = await fetch(`${API_ENDPOINT}/subscriptions`);
+		const response = await fetch(`${API_ENDPOINT}/subscriptions?userId=${chatId}`);
 		const json = await response.json();
 		return json;
 	} catch (error) {
@@ -60,7 +61,7 @@ const getSubscriptions = async() => {
 		return {error: true};
 	}
 	return Promise.resolve(true);
-}
+};
 
 const getSubscriptionsByChatId = async (chatId) => {
 	try {
@@ -71,8 +72,7 @@ const getSubscriptionsByChatId = async (chatId) => {
 		console.log('error showing series', error);
 		return {error: true};
 	}
-	return Promise.resolve(true);
-}
+};
 
 const deleteSubscription = async() => {
 	try {
@@ -85,7 +85,7 @@ const deleteSubscription = async() => {
 	}
 
 	return Promise.resolve(true);
-}
+};
 
 module.exports.searchSeries = searchSeries;
 module.exports.showItem = showItem;
