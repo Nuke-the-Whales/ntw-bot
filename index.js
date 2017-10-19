@@ -85,10 +85,13 @@ bot.hears(/^\/start/, async ctx => {
 bot.hears(/^\/info/, async ctx => {
     const seriesId = ctx.update.message.text.split(' ')[1];
     const showInfo = await service.showItem(seriesId);
+    const chatId = ctx.update.message.chat.id;
 
     if (!showInfo.error) {
         let formattedShowInfo = utils.prepareShowInfo(showInfo, seriesId);
-        return ctx.replyWithPhoto(formattedShowInfo[0], formattedShowInfo[1]);
+        let data = formattedShowInfo[2];
+        let textInfo = `<b>${data.title}</b>\n\nRating: <b>${data.rating}</b>/10 (${data.votes} votes)\n\n${data.overview}`
+        return ctx.replyWithPhoto(formattedShowInfo[0], formattedShowInfo[1]).then(() => telega.sendMessage(chatId, textInfo, {parse_mode: "HTML"}));
     }
     return ctx.reply(`Couldn't fetch show info. Please try again`);
 });
