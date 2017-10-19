@@ -25,11 +25,16 @@ const generateSubscribeKeyboard = (seriesId, buttons, type) => {
     };
 };
 
-const afterSubscriptionKeyboard = () => {
+const afterSubscriptionKeyboard = (seriesId) => {
     const continueSearchButton = {
         text: 'Continue searching series...',
         switch_inline_query_current_chat: ''
     };
+
+    const getMemeButton = {
+        text: `Might you be interested in some FUNNY PICTURES?`,
+        callback_data: JSON.stringify({type: 'meme', id: seriesId})
+    }
 
     const endButton = {
         text: `No I'm done`,
@@ -37,7 +42,7 @@ const afterSubscriptionKeyboard = () => {
     };
 
     return {
-        inline_keyboard: [[continueSearchButton], [endButton]]
+        inline_keyboard: [[continueSearchButton], [getMemeButton], [endButton]]
     }
 };
 
@@ -53,10 +58,11 @@ const prepareSeriesList = (seriesList) => {
         );
 };
 
-const prepareShowInfo = ({poster, overview}, seriesId) => {
+const prepareShowInfo = (show, seriesId) => {
     let preparedPoster;
+    console.log('showwwww', show);
     if (poster.startsWith('https')) {
-        preparedPoster = poster.replace('https', 'http');
+        preparedPoster = show.poster.replace('https', 'http');
     } else {
         preparedPoster = poster;
     }
@@ -64,7 +70,7 @@ const prepareShowInfo = ({poster, overview}, seriesId) => {
     return [{
                 url: preparedPoster
             }, {
-                caption: overview,
+                caption: show.overview,
                 reply_markup: generateSubscribeKeyboard(seriesId, ['subscribe', 'leave'], 'inline')
             }];
 };
@@ -85,11 +91,11 @@ const prepareTorrentKeyboard = (seriesId) => {
     };
 };
 
-const prepareSubscriptionResponse = () => {
+const prepareSubscriptionResponse = (seriesId) => {
     return [
         'Subscription successful',
         {
-            reply_markup: afterSubscriptionKeyboard(),
+            reply_markup: afterSubscriptionKeyboard(seriesId),
             parse_mode: "HTML"
         }
     ];
