@@ -89,7 +89,8 @@ const prepareSubscriptionResponse = () => {
     return [
         'Subscription successful',
         {
-            reply_markup: afterSubscriptionKeyboard()
+            reply_markup: afterSubscriptionKeyboard(),
+            parse_mode: "HTML"
         }
     ];
 };

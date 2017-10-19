@@ -84,8 +84,18 @@ const deleteSubscription = async() => {
 		return {error: true};
 	}
 
-	return Promise.resolve(true);
 };
+
+const getLastEpisode = async (seriesId) => {
+	try {
+		const response = await fetch(`${API_ENDPOINT}/show/last?id=${seriesId}`);
+		const json = await response.json();
+		return json;
+	} catch (error) {
+		console.log('error showing series', error);
+		return {error: true};
+	}
+}
 
 module.exports.searchSeries = searchSeries;
 module.exports.showItem = showItem;
@@ -94,3 +104,4 @@ module.exports.getUpdates = getUpdates;
 module.exports.getSubscriptions = getSubscriptions;
 module.exports.deleteSubscription = deleteSubscription;
 module.exports.getSubscriptionsByChatId = getSubscriptionsByChatId;
+module.exports.getLastEpisode = getLastEpisode;

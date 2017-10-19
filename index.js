@@ -97,10 +97,11 @@ bot.hears(/^\/subscribe/, async ctx => {
         const seriesId = ctx.update.message.text.split(' ')[1];
         const userId = ctx.update.message.from.id;
         const subscribeResult = await service.addSubscription(userId, seriesId);
-
+        const lastEpisodeInfo = await service.getLastEpisode(seriesId);
+        const replyStr = `Subscription successful!\n<b>Last episode:</b> S${lastEpisodeInfo.season}E${lastEpisodeInfo.number} - ${lastEpisodeInfo.title}`
         if (!subscribeResult.error) {
             let formattedSubscriptionInfo = utils.prepareSubscriptionResponse();
-            ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
+            ctx.reply(replyStr, formattedSubscriptionInfo[1]);
             // const subInfo = await service.getSubscriptionsByChatId(ctx.update.message.chat.id);
             telega.sendMessage(ctx.update.message.chat.id, `Psst.. I have something useful for you, but you shouldn't say you got this from me`, {
                 reply_markup: utils.prepareTorrentKeyboard(seriesId)
