@@ -12,7 +12,7 @@ const service = require('./service');
 const bot = new Telegraf();
 const telega = new Telegram(process.env.BOT_TOKEN);
 
-bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
+// bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
 // bot.command('/start', (ctx) => chatId = ctx.update.message.chat.id);
 
 let recentManualUpdateTrigger = false;
@@ -25,11 +25,13 @@ const sendUpdate = ({chat_id, data}) => {
 const sendUpdates = async () => {
     let updatesFetchSuccess = false;
     let updatesFetchTries = 0;
+    const currentDate = new Date().toISOString().slice(0,10)
 
 	while (updatesFetchTries < 5 && !updatesFetchSuccess) {
 	    let updateData;
 	    try {
-	        updateData = await service.getUpdates();
+	        updateData = await service.getUpdates(currentDate);
+	        console.log('updatedata', updateData);
         } catch (error) {
 	        console.log('error getting updates', error);
 		    updatesFetchTries++;
@@ -63,6 +65,23 @@ setInterval(() => sendUpdates(), 1000 * 60 * 60 * 24);
 // });
 
 //Pseudo-command
+bot.hears(/^\/start/, async ctx => {
+	telega.sendMessage(ctx.update.message.chat.id,
+		'Lets begin by adding some subscriptions. Click "Search" Button to start',
+		{reply_markup:
+			{inline_keyboard: [
+				[
+					{
+						text: 'Search',
+						switch_inline_query_current_chat: ''
+					}
+				]
+			]}
+		});
+
+});
+
+
 bot.hears(/^\/info/, async ctx => {
     const seriesId = ctx.update.message.text.split(' ')[1];
     const showInfo = await service.showItem(seriesId);
@@ -94,13 +113,15 @@ bot.hears(/^\/subscribe/, async ctx => {
 )
 
 bot.hears(/^\/myshows/, async ctx => {
-		const subscriptions = await service.getSubscriptions(ctx.update.message.chat.id);
+		const subscriptions = await service.getSubscriptionsByChatId(ctx.update.message.chat.id);
 
 		if (!subscriptions.error) {
-			let formattedSubscriptions = utils.prepareSubscriptions();
-			return ctx.reply(formattedSubscriptionInfo[0], formattedSubscriptionInfo[1]);
+			let formattedSubscriptions = utils.prepareSubscriptions(subscriptions);
+			// bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
+
+			return ctx.reply(formattedSubscriptions, {parse_mode: "HTML"});
 		}
-		return ctx.reply(`Couldn't subscribe. Please try again`);
+		return ctx.reply(`Couldn't fetch your subscriptions. Please try again`);
 	}
 );
 
@@ -109,6 +130,7 @@ bot.hears(/^\/delete/, async ctx => {
 	const chatId = ctx.update.message.chat_id;
 	const deleteSubscriptionResult = await service.deleteSubscription(chatId, seriesId);
 
+
 		if (!deleteSubscriptionResult.error) {
 			return ctx.reply('You have been unsubscribed from this show');
 		}
@@ -116,7 +138,7 @@ bot.hears(/^\/delete/, async ctx => {
 	}
 );
 
-bot.hears(/^\/testUpdates/, async ctx => {
+bot.hears(/^\/testupdate/, async ctx => {
 		if (recentManualUpdateTrigger) return;
 		sendUpdates();
 		recentManualUpdateTrigger = true;
@@ -177,10 +199,10 @@ bot.on('callback_query', async ctx => {
             const chatId = ctx.update.callback_query.message.chat.id;
             const showInfo = await service.showItem(updateData.id);
             const torrents = showInfo.torrents.slice(0, 3);
-            console.log('torrents', torrents)
             ctx.editMessageReplyMarkup(JSON.stringify({}));
             ctx.answerCallbackQuery('Check this out!');
-            telega.sendMessage()
+            const formattedTorrents = utils.prepareTorrentMarkup(torrents);
+            telega.sendMessage(chatId, formattedTorrents, {parse_mode: 'HTML'});
         }
         case 'noTorrent': {
             ctx.editMessageReplyMarkup(JSON.stringify({}));
@@ -194,6 +216,7 @@ bot.on('callback_query', async ctx => {
             break;
     }
 });
+
 
 
 module.exports = bot;

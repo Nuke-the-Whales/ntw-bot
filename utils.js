@@ -39,7 +39,7 @@ const afterSubscriptionKeyboard = () => {
     return {
         inline_keyboard: [[continueSearchButton], [endButton]]
     }
-}
+};
 
 const prepareSeriesList = (seriesList) => {
     return seriesList
@@ -83,7 +83,7 @@ const prepareTorrentKeyboard = (seriesId) => {
     return {
         inline_keyboard: [[yesButton], [noButton]]
     };
-}
+};
 
 const prepareSubscriptionResponse = () => {
     return [
@@ -94,11 +94,29 @@ const prepareSubscriptionResponse = () => {
     ];
 };
 
-const prepareSubscriptions = () => {
-    return [
-        ''
-    ]
-}
+const prepareSubscriptions = (subscriptions) => {
+// bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
+
+	console.log('subs', subscriptions)
+
+    return subscriptions.map(sub => {
+        let parsedSub = {};
+        parsedSub.title = 'test';
+        parsedSub.delete = `<a href="tg://bot_command?command=/delete ${sub.id}&bot=NukeTheWhalesBot">Delete subscription</a>`
+        return `${parsedSub.title}\n${parsedSub.delete}`;
+    }).join('\n\n');
+};
+
+const prepareTorrentMarkup = (torrents) => {
+    return torrents.map(torrent => {
+        let parsedTorrent = {};
+	    parsedTorrent.title = `<i>${torrent.title}</i>`;
+	    parsedTorrent.size = `<b>Size:</b> ${torrent.size}`;
+	    parsedTorrent.url = `<b>Magic Link:</b> <a href="${torrent.url}">Download</a>`;
+
+        return `${parsedTorrent.title}\n${parsedTorrent.size}\n${parsedTorrent.url}`
+    }).join('\n\n');
+};
 
 const errorMsg = {
     type: 'article',
@@ -112,3 +130,5 @@ module.exports.prepareShowInfo = prepareShowInfo;
 module.exports.prepareSubscriptionResponse = prepareSubscriptionResponse;
 module.exports.errorMsg = errorMsg;
 module.exports.prepareTorrentKeyboard = prepareTorrentKeyboard;
+module.exports.prepareTorrentMarkup = prepareTorrentMarkup;
+module.exports.prepareSubscriptions = prepareSubscriptions;
