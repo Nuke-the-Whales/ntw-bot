@@ -65,13 +65,12 @@ const prepareShowInfo = (show, seriesId) => {
     } else {
         preparedPoster = show.poster;
     }
-
     return [{
                 url: preparedPoster
             }, {
-                caption: show.overview,
-                reply_markup: generateSubscribeKeyboard(seriesId, ['subscribe', 'leave'], 'inline')
-            }];
+                reply_markup: generateSubscribeKeyboard(seriesId, ['subscribe', 'leave'], 'inline'),
+                parse_mode: "HTML"
+            }, {overview: show.overview, title: show.original_name, rating: show.vote_average, votes: show.vote_count}];
 };
 
 const prepareTorrentKeyboard = (seriesId) => {
