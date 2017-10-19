@@ -60,11 +60,10 @@ const prepareSeriesList = (seriesList) => {
 
 const prepareShowInfo = (show, seriesId) => {
     let preparedPoster;
-    console.log('showwwww', show);
-    if (poster.startsWith('https')) {
+    if (show.poster.startsWith('https')) {
         preparedPoster = show.poster.replace('https', 'http');
     } else {
-        preparedPoster = poster;
+        preparedPoster = show.poster;
     }
 
     return [{
