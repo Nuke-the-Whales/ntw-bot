@@ -100,7 +100,7 @@ bot.hears(/^\/subscribe/, async ctx => {
         const lastEpisodeInfo = await service.getLastEpisode(seriesId);
         const replyStr = `Subscription successful!\n<b>Last episode:</b> S${lastEpisodeInfo.season}E${lastEpisodeInfo.number} - ${lastEpisodeInfo.title}`
         if (!subscribeResult.error) {
-            let formattedSubscriptionInfo = utils.prepareSubscriptionResponse();
+            let formattedSubscriptionInfo = utils.prepareSubscriptionResponse(seriesId);
             ctx.reply(replyStr, formattedSubscriptionInfo[1]);
             // const subInfo = await service.getSubscriptionsByChatId(ctx.update.message.chat.id);
             telega.sendMessage(ctx.update.message.chat.id, `Psst.. I have something useful for you, but you shouldn't say you got this from me`, {
@@ -212,6 +212,34 @@ bot.on('callback_query', async ctx => {
         case 'end': {
             ctx.editMessageReplyMarkup(JSON.stringify({}));
 	        return ctx.answerCallbackQuery('Ok. We will ping you when new episodes come out');
+        }
+        case 'meme': {
+            const chatId = ctx.update.callback_query.message.chat.id;
+            const memeShownIndex = updateData.memeShownIndex || 0;
+            let showInfo;
+            if (memeShownIndex !== 'DONE') {
+                showInfo = await service.showItem(updateData.id);
+            } else {
+                ctx.editMessageReplyMarkup(JSON.stringify({}));
+                telega.sendMessage(chatId, 'Ran out of memes. Sorry...', {reply_markup: {inline_keyboard: [[
+                    {
+                        text: 'Continue searching series?',
+                        switch_inline_query_current_chat: ''
+                    }
+                ]]}});
+
+                return;
+            }
+            const memes = showInfo.memes;
+            const memeUrl = memes[memeShownIndex];
+            
+            ctx.answerCallbackQuery('TOP KEK');
+            telega.sendPhoto(chatId, memeUrl, {reply_markup: {inline_keyboard: [[
+                {
+                    text: 'MOAR?',
+                    callback_data: JSON.stringify({type: 'meme', id: updateData.id, memeShownIndex: memeShownIndex === 4 ? 'DONE' : memeShownIndex + 1})
+                }
+            ]]}});
         }
         default:
             break;
