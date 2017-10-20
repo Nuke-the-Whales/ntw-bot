@@ -88,10 +88,10 @@ const getSubscriptions = async () => {
 const getSubscriptionsByChatId = async (chatId) => {
 	try {
 		const response = await fetch(`${API_ENDPOINT}/subscriptions/all?userId=${chatId}`);
-		if (response === null) {
+		const json = await response.json();
+		if (Object.keys(json).length === 0) {
 			return null;
 		}
-		const json = await response.json();
 		return json;
 	} catch (error) {
 		console.log('error getting subscriptions', error);
