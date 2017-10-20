@@ -1,6 +1,6 @@
-const generateSubscribeKeyboard = (seriesId, buttons, type) => {
+const generateSubscribeKeyboard = (seriesId, showName, buttons, type) => {
     const subscribeButton = {
-        text: `/subscribe ${seriesId}`
+        text: `/subscribe ${seriesId} ${showName}`
     };
 
     const showMoreButton = {
@@ -65,6 +65,7 @@ const prepareSeriesList = (seriesList) => {
 
 const prepareShowInfo = (show, seriesId) => {
     let preparedPoster;
+    let showName = show.original_name;
     if (show.poster.startsWith('https')) {
         preparedPoster = show.poster.replace('https', 'http');
     } else {
@@ -73,7 +74,7 @@ const prepareShowInfo = (show, seriesId) => {
     return [{
                 url: preparedPoster
             }, {
-                reply_markup: generateSubscribeKeyboard(seriesId, ['subscribe', 'leave'], 'inline'),
+                reply_markup: generateSubscribeKeyboard(seriesId, showName, ['subscribe', 'leave'], 'inline'),
                 parse_mode: "HTML"
             }, {overview: show.overview, title: show.original_name, rating: show.vote_average, votes: show.vote_count}];
 };
@@ -107,13 +108,17 @@ const prepareSubscriptionResponse = (seriesId) => {
 const prepareSubscriptions = (subscriptions) => {
 // bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
 
-	console.log('subs', subscriptions)
-
-    return subscriptions.map(sub => {
+    const imdbArr = Object.keys(subscriptions);
+	let subs = [];
+	for (var sub in subscriptions) {
+	    subs.push({id: sub, title: subscriptions[sub]});
+    }
+    return subs.map(sub => {
         let parsedSub = {};
-        parsedSub.title = 'test';
-        parsedSub.delete = `<a href="tg://bot_command?command=/delete ${sub.id}&bot=NukeTheWhalesBot">Delete subscription</a>`
-        return `${parsedSub.title}\n${parsedSub.delete}`;
+        parsedSub.title = `<b>${sub.title}</b>`;
+        parsedSub.subscribe = `<b>Fetch info about show: </b>/subscribe_${sub.id}`;
+        parsedSub.delete = `<b>Unsubsribe: </b><a href="tg://bot_command?command=/delete&bot=NukeTheWhalesBotDev">/delete_${sub.id}</a>`
+        return `${parsedSub.title}\n${parsedSub.subscribe}\n${parsedSub.delete}`;
     }).join('\n\n');
 };
 

@@ -31,7 +31,6 @@ const sendUpdates = async () => {
 	    let updateData;
 	    try {
 	        updateData = await service.getUpdates(currentDate);
-	        console.log('updatedata', updateData);
         } catch (error) {
 	        console.log('error getting updates', error);
 		    updatesFetchTries++;
@@ -97,9 +96,22 @@ bot.hears(/^\/info/, async ctx => {
 });
 
 bot.hears(/^\/subscribe/, async ctx => {
-        const seriesId = ctx.update.message.text.split(' ')[1];
-        const userId = ctx.update.message.from.id;
-        const subscribeResult = await service.addSubscription(userId, seriesId);
+		let seriesId;
+		let userId;
+		let showNameArr;
+		let showName;
+		if (ctx.update.message.text.startsWith('/subscribe_')) {
+			seriesId = ctx.update.message.text.split('_')[1];
+			userId = ctx.update.message.from.id;
+			showName = 'plaaaceholder';
+		} else {
+			seriesId = ctx.update.message.text.split(' ')[1];
+			userId = ctx.update.message.from.id;
+			showNameArr = ctx.update.message.text.split(' ').slice(2);
+			showName = showNameArr.length > 1 ? showNameArr.join(' '): showNameArr.join('');
+		}
+
+        const subscribeResult = await service.addSubscription(userId, seriesId, showName);
         const lastEpisodeInfo = await service.getLastEpisode(seriesId);
         const replyStr = `Subscription successful!\n<b>Last episode:</b> S${lastEpisodeInfo.season}E${lastEpisodeInfo.number} - ${lastEpisodeInfo.title}`
         if (!subscribeResult.error) {
@@ -122,18 +134,16 @@ bot.hears(/^\/myshows/, async ctx => {
 		if (!subscriptions.error) {
 			let formattedSubscriptions = utils.prepareSubscriptions(subscriptions);
 			// bot.command('/start', (ctx) => chatId = telega.sendMessage(ctx.update.message.chat.id, `<a href="tg://bot_command?command=/start&bot=NukeTheWhalesBot">/start</a>`,{parse_mode: "HTML"}));
-
-			return ctx.reply(formattedSubscriptions, {parse_mode: "HTML"});
+			return telega.sendMessage(ctx.update.message.chat.id, formattedSubscriptions, {parse_mode: "HTML"});
 		}
 		return ctx.reply(`Couldn't fetch your subscriptions. Please try again`);
 	}
 );
 
 bot.hears(/^\/delete/, async ctx => {
-	const seriesId = ctx.update.message.text.split(' ')[1];
-	const chatId = ctx.update.message.chat_id;
+	const seriesId = ctx.update.message.text.split('_')[1];
+	const chatId = ctx.update.message.chat.id;
 	const deleteSubscriptionResult = await service.deleteSubscription(chatId, seriesId);
-
 
 		if (!deleteSubscriptionResult.error) {
 			return ctx.reply('You have been unsubscribed from this show');
