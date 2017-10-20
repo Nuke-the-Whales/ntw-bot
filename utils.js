@@ -117,7 +117,7 @@ const prepareSubscriptions = (subscriptions) => {
         let parsedSub = {};
         parsedSub.title = `<b>${sub.title}</b>`;
         parsedSub.subscribe = `<b>Fetch info about show: </b>/subscribe_${sub.id}`;
-        parsedSub.delete = `<b>Unsubsribe: </b><a href="tg://bot_command?command=/delete&bot=NukeTheWhalesBotDev">/delete_${sub.id}</a>`
+        parsedSub.delete = `<b>Unsubsribe: </b><a href="tg://bot_command?command=/delete&bot=NukeTheWhalesBot">/delete_${sub.id}</a>`
         return `${parsedSub.title}\n${parsedSub.subscribe}\n${parsedSub.delete}`;
     }).join('\n\n');
 };
