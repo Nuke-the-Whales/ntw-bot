@@ -34,7 +34,12 @@ const afterSubscriptionKeyboard = (seriesId) => {
     const getMemeButton = {
         text: `Might you be interested in some FUNNY PICTURES?`,
         callback_data: JSON.stringify({type: 'meme', id: seriesId})
-    }
+    };
+
+    const getSOQuestionsButton = {
+        text: 'Check out what community talks about (SPOILER ALERT)',
+        callback_data: JSON.stringify(({type: 'SO', id: seriesId}))
+    };
 
     const endButton = {
         text: `No I'm done`,
@@ -42,7 +47,7 @@ const afterSubscriptionKeyboard = (seriesId) => {
     };
 
     return {
-        inline_keyboard: [[continueSearchButton], [getMemeButton], [endButton]]
+        inline_keyboard: [[continueSearchButton], [getMemeButton], [getSOQuestionsButton], [endButton]]
     }
 };
 

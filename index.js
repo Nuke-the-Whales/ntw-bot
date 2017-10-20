@@ -212,6 +212,20 @@ bot.on('callback_query', async ctx => {
             ctx.editMessageReplyMarkup(JSON.stringify({}));
 	        return ctx.answerCallbackQuery('No problem. Ask me anytime later');
         }
+	    case 'SO': {
+		    const chatId = ctx.update.callback_query.message.chat.id;
+		    const showInfo = await service.showItem(updateData.id);
+		    const showName = showInfo.original_name;
+		    const lang = showInfo.original_language;
+		    const SOData = await service.showSOData(showName);
+		    if (SOData === null) return ctx.answerCallbackQuery('Sorry. No StackExchange question found for this series');
+		    const responseMsg = SOData.map((item) => `<b>Title: </b>${item.title}\n<b>Link: </b><a href='${item.link}'>${item.link}</a>\n<b>Score: </b>${item.score}`);
+		    const responseMsg2 = SOData.map((item) => `<b>Title: </b>${item.title}\n`);
+		    const formatted = responseMsg.join('\n\n');
+
+		    telega.sendMessage(chatId, formatted, {parse_mode: "HTML"});
+		    return ctx.answerCallbackQuery('Here are top stackexchange questions for this series');
+	    }
         case 'end': {
             ctx.editMessageReplyMarkup(JSON.stringify({}));
 	        return ctx.answerCallbackQuery('Ok. We will ping you when new episodes come out');
