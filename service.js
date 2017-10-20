@@ -23,11 +23,11 @@ const showItem = async (itemId) => {
     }
 };
 
-const addSubscription = async (userId, showId) => {
+const addSubscription = async (userId, showId, showName) => {
     try {
 		const response = await fetch(`${API_ENDPOINT}/subscriptions`, { 
 			method: 'POST',
-			body: JSON.stringify({userId: userId.toString(), showId}) ,
+			body: JSON.stringify({userId: userId.toString(), showId, showName}) ,
 			headers: { 'Content-Type': 'application/json' }
 		});
 		return response.status;
@@ -58,7 +58,6 @@ const showSOData = async (showName) => {
 }
 
 const getUpdates = async currentDate => {
-	console.log('curdate', currentDate);
 	try {
 		const response = await fetch(`${API_ENDPOINT}/tv-updates?date=${currentDate}`);
 		const json = await response.json();
@@ -85,22 +84,25 @@ const getSubscriptions = async () => {
 
 const getSubscriptionsByChatId = async (chatId) => {
 	try {
-		const response = await fetch(`${API_ENDPOINT}/subscriptions?userId=${chatId}`);
+		const response = await fetch(`${API_ENDPOINT}/subscriptions/all?userId=${chatId}`);
 		const json = await response.json();
 		return json;
 	} catch (error) {
-		console.log('error showing series', error);
+		console.log('error getting subscriptions', error);
 		return {error: true};
 	}
 };
 
-const deleteSubscription = async() => {
+const deleteSubscription = async (userId, showId) => {
 	try {
-		const response = await fetch(`${API_ENDPOINT}/show?id=${itemId}`);
-		const json = await response.json();
-		return json;
+		const response = await fetch(`${API_ENDPOINT}/subscriptions`, {
+			method: 'DELETE',
+			body: JSON.stringify({userId: userId.toString(), showId}) ,
+			headers: { 'Content-Type': 'application/json' }
+		});
+		return response;
 	} catch (error) {
-		console.log('error showing series', error);
+		console.log('error deleting subscription', error);
 		return {error: true};
 	}
 
@@ -112,7 +114,7 @@ const getLastEpisode = async (seriesId) => {
 		const json = await response.json();
 		return json;
 	} catch (error) {
-		console.log('error showing series', error);
+		console.log('error getting last episode', error);
 		return {error: true};
 	}
 }
