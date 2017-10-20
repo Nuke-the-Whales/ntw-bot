@@ -37,6 +37,26 @@ const addSubscription = async (userId, showId) => {
     }
 };
 
+const showSOData = async (showName) => {
+	try {
+		const response = await fetch(`${API_ENDPOINT}/so?query=${showName}`);
+		const json = await response.json();
+		if (!json.items.length) return null;
+		const data = json.items
+			.sort((a, b) => b.score - a.score)
+			.slice(0, 3)
+			.map(({link, title, score}) => ({
+				link,
+				title,
+				score
+			}));
+		return data;
+	} catch (error) {
+		console.log('error fetching SO data', error);
+		return {error: true}
+	}
+}
+
 const getUpdates = async currentDate => {
 	console.log('curdate', currentDate);
 	try {
@@ -105,3 +125,4 @@ module.exports.getSubscriptions = getSubscriptions;
 module.exports.deleteSubscription = deleteSubscription;
 module.exports.getSubscriptionsByChatId = getSubscriptionsByChatId;
 module.exports.getLastEpisode = getLastEpisode;
+module.exports.showSOData = showSOData;
