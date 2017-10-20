@@ -87,7 +87,7 @@ const getSubscriptions = async () => {
 
 const getSubscriptionsByChatId = async (chatId) => {
 	try {
-		const response = await fetch(`${API_ENDPOINT}/subscriptions?userId=${chatId}`);
+		const response = await fetch(`${API_ENDPOINT}/subscriptions/all?userId=${chatId}`);
 		if (response === null) {
 			return null;
 		}
