@@ -73,6 +73,9 @@ const getUpdates = async currentDate => {
 const getSubscriptions = async () => {
 	try {
 		const response = await fetch(`${API_ENDPOINT}/subscriptions?userId=${chatId}`);
+		if (response === null) {
+			return null;
+		}
 		const json = await response.json();
 		return json;
 	} catch (error) {

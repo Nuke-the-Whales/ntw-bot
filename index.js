@@ -130,6 +130,9 @@ bot.hears(/^\/subscribe/, async ctx => {
 
 bot.hears(/^\/myshows/, async ctx => {
 		const subscriptions = await service.getSubscriptionsByChatId(ctx.update.message.chat.id);
+		if (subscriptions === null) {
+			return ctx.reply('No subscriptions found');
+		}
 
 		if (!subscriptions.error) {
 			let formattedSubscriptions = utils.prepareSubscriptions(subscriptions);
